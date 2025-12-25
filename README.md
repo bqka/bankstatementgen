@@ -56,3 +56,5 @@ Unit tests target generator utilities and hooks. Extend coverage by adding suite
 
 EXPO_PUBLIC_PDF_SERVICE_URL_WEB=http://localhost:8080/pdf
 EXPO_PUBLIC_PDF_SERVICE_URL_DEVICE=http://<YOUR_IP>:8080/pdf
+
+run `java -jar pdfservice/target/pdfservice-0.0.1-SNAPSHOT.jar`
