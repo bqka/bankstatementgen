@@ -9,6 +9,7 @@ public class Fonts {
   public final Font header;
   public final Font body;
   public final Font small;
+  public final Font cellTitle;
 
   public Fonts() throws Exception {
 
@@ -24,7 +25,8 @@ public class Fonts {
         BaseFont.NOT_EMBEDDED
     );
 
-    this.title  = new Font(helveticaBold, 12);
+    this.cellTitle = new Font(helveticaBold, 12);
+    this.title  = new Font(helvetica, 12);
     this.header = new Font(helveticaBold, 9);
     this.body   = new Font(helvetica, 9);
     this.small  = new Font(helvetica, 8);

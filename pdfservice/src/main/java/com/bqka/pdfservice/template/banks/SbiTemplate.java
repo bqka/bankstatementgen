@@ -28,8 +28,13 @@ public class SbiTemplate implements BankPdfTemplate {
     // ================= LOGO =================
 
     private void addLogo(Document doc) throws Exception {
-        Image logo = Image.getInstance("sbi.png"); // PNG, NOT SVG
-        logo.scaleToFit(120, 40);
+        Image logo = Image.getInstance("sbi.jpg");
+        float baseW = 242f;
+        float baseH = 72f;
+
+        float scale = 0.75f;
+
+        logo.scaleToFit(baseW * scale, baseH * scale);
         logo.setAlignment(Image.LEFT);
         doc.add(logo);
     }
@@ -41,15 +46,15 @@ public class SbiTemplate implements BankPdfTemplate {
 
         PdfPTable info = new PdfPTable(3);
         info.setWidthPercentage(100);
-        info.setWidths(new float[] { 32, 3, 65 });
-        info.setSpacingBefore(8);
-        info.setSpacingAfter(10);
+        info.setWidths(new float[] { 17, 1, 65 });
+        info.setSpacingBefore(5);
+        info.setSpacingAfter(0);
 
         addInfo(info, "Account Name", stmt.details.name, fonts);
         addInfo(info, "Address",
                 stmt.details.address != null
                         ? stmt.details.address
-                        : "CUSTOMER ADDRESS\nCITY - 000000",
+                        : "LAXMANPURA PO. UKAWAD\nLAXMANPURA\nLAXMANPURA",
                 fonts);
         addInfo(info, "Date", format(stmt.meta.generatedAt), fonts);
         addInfo(info, "Account Number", stmt.details.accountNumber, fonts);
@@ -64,28 +69,74 @@ public class SbiTemplate implements BankPdfTemplate {
         addInfo(info, "Interest Rate (% p.a.)", "2.5", fonts);
         addInfo(info, "MOD Balance", "0.00", fonts);
         addInfo(info, "CIF No.", generateCif(), fonts);
-        addInfo(info, "IFSC Code", stmt.details.ifsc, fonts);
+        addInfo(info, "CYKCR Number", "", fonts);
+        addInfo(info, "IFS Code\n(Indian Financial System)", stmt.details.ifsc, fonts);
+        addInfo(info, "MICR Code\n(Magnetic Ink Character Recognition)", "473002511", fonts);
+        addInfo(info, "Nomination Registered", "No", fonts);
+        // addInfo(info, "Balance as on 25 Dec 2025", "2,33,213.12", fonts);
 
         doc.add(info);
+        addRow(doc, new float[]{19, 1, 65}, "Balance as on 25 Dec 2025", "2,31,123.12", fonts);
     }
 
-    private void addInfo(
-            PdfPTable table,
-            String label,
-            String value,
-            Fonts fonts) {
-        table.addCell(infoCell(label, fonts.header));
-        table.addCell(infoCell(":", fonts.body));
-        table.addCell(infoCell(value, fonts.body));
+    private void addRow(Document doc, float[] widths,
+            String label, String value, Fonts fonts)
+            throws Exception {
+
+        PdfPTable row = new PdfPTable(3);
+        row.setWidthPercentage(100);
+        row.setSpacingBefore(2);
+        row.setSpacingAfter(3);
+        row.setWidths(widths);
+
+        addInfo(row, label, value, fonts);
+        doc.add(row);
     }
 
-    private PdfPCell infoCell(String text, Font font) {
-        PdfPCell c = new PdfPCell(new Phrase(text, font));
-        c.setBorder(Rectangle.NO_BORDER);
-        c.setPadding(2);
-        c.setVerticalAlignment(Element.ALIGN_TOP);
-        return c;
+    private void addInfo(PdfPTable table, String label, String value, Fonts fonts) {
+        float padTop = 3f;
+        float padBottom = 3f;
+
+        PdfPCell c1 = new PdfPCell(new Phrase(label, fonts.body));
+        c1.setBorder(Rectangle.NO_BORDER);
+        c1.setPaddingTop(padTop);
+        c1.setPaddingBottom(padBottom);
+        c1.setVerticalAlignment(Element.ALIGN_TOP);
+        c1.setUseAscender(true);
+        c1.setUseDescender(true);
+        c1.setNoWrap(true);
+
+        PdfPCell c2 = new PdfPCell(new Phrase(":", fonts.body));
+        c2.setBorder(Rectangle.NO_BORDER);
+        c2.setPaddingTop(padTop);
+        c2.setPaddingBottom(padBottom);
+        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c2.setVerticalAlignment(Element.ALIGN_TOP);
+        c2.setUseAscender(true);
+        c2.setUseDescender(true);
+
+        PdfPCell c3 = new PdfPCell(new Phrase(value, fonts.body));
+        c3.setBorder(Rectangle.NO_BORDER);
+        c3.setPaddingTop(padTop);
+        c3.setPaddingBottom(padBottom);
+
+        c3.setUseAscender(true);
+        c3.setUseDescender(true);
+        c3.setLeading(0f, 1.15f);
+        c3.setVerticalAlignment(Element.ALIGN_TOP);
+
+        table.addCell(c1);
+        table.addCell(c2);
+        table.addCell(c3);
     }
+
+    // private PdfPCell infoCell(String text, Font font) {
+    //     PdfPCell c = new PdfPCell(new Phrase(text, font));
+    //     c.setBorder(Rectangle.NO_BORDER);
+    //     c.setPadding(2);
+    //     c.setVerticalAlignment(Element.ALIGN_TOP);
+    //     return c;
+    // }
 
     // ================= TITLE =================
 
@@ -105,7 +156,7 @@ public class SbiTemplate implements BankPdfTemplate {
                 "Account Statement from " + start + " to " + end,
                 fonts.title);
         title.setSpacingBefore(12);
-        title.setSpacingAfter(6);
+        title.setSpacingAfter(15);
 
         doc.add(title);
     }
@@ -128,13 +179,13 @@ public class SbiTemplate implements BankPdfTemplate {
                 18 // Balance
         });
 
-        addHeader(table, "Txn Date", fonts);
-        addHeader(table, "Value Date", fonts);
-        addHeader(table, "Description", fonts);
-        addHeader(table, "Ref No./Cheque No.", fonts);
-        addHeader(table, "Debit", fonts);
-        addHeader(table, "Credit", fonts);
-        addHeader(table, "Balance", fonts);
+        addHeader(table, "Txn Date", fonts, Element.ALIGN_LEFT);
+        addHeader(table, "Value Date", fonts, Element.ALIGN_LEFT);
+        addHeader(table, "Description", fonts, Element.ALIGN_LEFT);
+        addHeader(table, "Ref No./Cheque No.", fonts, Element.ALIGN_LEFT);
+        addHeader(table, "Debit", fonts, Element.ALIGN_RIGHT);
+        addHeader(table, "Credit", fonts, Element.ALIGN_RIGHT);
+        addHeader(table, "Balance", fonts, Element.ALIGN_RIGHT);
 
         for (Transaction tx : stmt.transactions) {
             table.addCell(bodyCell(format(tx.date), fonts.body, Element.ALIGN_RIGHT));
@@ -149,17 +200,17 @@ public class SbiTemplate implements BankPdfTemplate {
         doc.add(table);
     }
 
-    private void addHeader(PdfPTable table, String text, Fonts fonts) {
+    private void addHeader(PdfPTable table, String text, Fonts fonts, int align) {
         PdfPCell c = new PdfPCell(new Phrase(text, fonts.header));
-        c.setPadding(4);
-        c.setHorizontalAlignment(Element.ALIGN_LEFT);
+        c.setPadding(2);
+        c.setHorizontalAlignment(align);
         c.setBackgroundColor(Color.WHITE);
         table.addCell(c);
     }
 
     private PdfPCell bodyCell(String text, Font font, int align) {
         PdfPCell c = new PdfPCell(new Phrase(text != null ? text : "", font));
-        c.setPadding(3);
+        c.setPadding(2);
         c.setHorizontalAlignment(align);
         c.setVerticalAlignment(Element.ALIGN_TOP);
         return c;

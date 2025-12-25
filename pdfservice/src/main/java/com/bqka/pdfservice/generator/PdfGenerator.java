@@ -17,6 +17,7 @@ public class PdfGenerator {
     Document doc = new Document(PageSize.A4, 36, 36, 36, 36);
     PdfWriter.getInstance(doc, out);
 
+    doc.addProducer("iText 2.0.4 (by lowagie.com)");
     doc.open();
 
     Fonts fonts = new Fonts();
